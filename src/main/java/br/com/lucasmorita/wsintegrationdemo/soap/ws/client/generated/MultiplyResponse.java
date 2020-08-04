@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
     "multiplyResult"
 })
 @XmlRootElement(name = "MultiplyResponse")
-public class MultiplyResponse {
+public class MultiplyResponse implements Operation {
 
     @XmlElement(name = "MultiplyResult")
     protected int multiplyResult;
@@ -41,7 +41,7 @@ public class MultiplyResponse {
      * Obtém o valor da propriedade multiplyResult.
      * 
      */
-    public int getMultiplyResult() {
+    public int getResult() {
         return multiplyResult;
     }
 

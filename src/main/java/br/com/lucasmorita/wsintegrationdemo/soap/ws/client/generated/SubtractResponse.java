@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
     "subtractResult"
 })
 @XmlRootElement(name = "SubtractResponse")
-public class SubtractResponse {
+public class SubtractResponse implements Operation {
 
     @XmlElement(name = "SubtractResult")
     protected int subtractResult;
@@ -41,7 +41,7 @@ public class SubtractResponse {
      * Obtém o valor da propriedade subtractResult.
      * 
      */
-    public int getSubtractResult() {
+    public int getResult() {
         return subtractResult;
     }
 
