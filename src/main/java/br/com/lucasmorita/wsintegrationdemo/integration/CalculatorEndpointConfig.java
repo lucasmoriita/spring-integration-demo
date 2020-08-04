@@ -1,4 +1,4 @@
-package br.com.lucasmorita.wsintegrationdemo.soap;
+package br.com.lucasmorita.wsintegrationdemo.integration;
 
 import br.com.lucasmorita.wsintegrationdemo.rest.Expression;
 import br.com.lucasmorita.wsintegrationdemo.soap.ws.client.generated.*;
@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 
 @EnableIntegration
 @Configuration
-public class EndpointConfigurer {
+public class CalculatorEndpointConfig {
 
 
     @Bean
