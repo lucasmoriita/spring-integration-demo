@@ -7,14 +7,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.MessageChannels;
-import org.springframework.integration.handler.LoggingHandler;
+import org.springframework.integration.file.FileHeaders;
+import org.springframework.integration.file.dsl.Files;
 import org.springframework.integration.ws.DefaultSoapHeaderMapper;
 import org.springframework.integration.ws.dsl.Ws;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.ws.client.core.WebServiceTemplate;
+
+import java.nio.file.Paths;
 
 @EnableIntegration
 @Configuration
@@ -35,8 +37,7 @@ public class EndpointConfigurer {
                     add.setIntB(expression.getNumber2());
                     return add;
                 })
-                .channel(wsRequestChannel())
-                .log(LoggingHandler.Level.INFO, Message::getPayload);
+                .channel(wsRequestChannel());
     }
 
     @Bean
@@ -84,11 +85,21 @@ public class EndpointConfigurer {
                         .encodingMode(DefaultUriBuilderFactory.EncodingMode.NONE)
                         .headerMapper(new DefaultSoapHeaderMapper())
                         .uri("http://www.dneonline.com/calculator.asmx"))
-                .<Object, Class<?>>route(Object::getClass, mapping -> mapping
-                        .subFlowMapping(AddResponse.class, sf -> sf.transform(AddResponse::getAddResult))
-                        .subFlowMapping(DivideResponse.class, sf -> sf.transform(DivideResponse::getDivideResult))
-                        .subFlowMapping(SubtractResponse.class, sf -> sf.transform(SubtractResponse::getSubtractResult))
-                        .subFlowMapping(MultiplyResponse.class, sf -> sf.transform(MultiplyResponse::getMultiplyResult)));
+                .publishSubscribeChannel(c -> c
+                        .subscribe(s -> s.transform(Operation::getResult))
+                        .subscribe(s -> s.channel("file.input"))
+                );
+
+    }
+
+    @Bean
+    public IntegrationFlow file() {
+        return f -> f
+                .enrichHeaders(h -> h
+                        .header(FileHeaders.FILENAME, "response.txt")
+                        .header("directory", Paths.get(".").toAbsolutePath().normalize().toFile()))
+                .<Operation, String>transform(o -> String.valueOf(o.getResult()))
+                .handle(Files.outboundAdapter(m -> m.getHeaders().get("directory")));
     }
 
     @Bean
